@@ -447,7 +447,7 @@ bash commands/kit.sh -s start.sh -l 3
 --------------------------------------------------------------------
 
 ```
-bash commands/kit.sh roslaunch burger_war setup_sim.launch
+bash commands/kit.sh -c roslaunch burger_war setup_sim.launch
 ```
 
 フィールドとロボットが立ち上がったら、別のターミナルで以下のマンドを実行して下さい。
