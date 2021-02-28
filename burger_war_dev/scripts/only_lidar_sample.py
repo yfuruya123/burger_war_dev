@@ -26,6 +26,8 @@ class AllSensorBot(object):
                  use_lidar=False, use_camera=False, use_imu=False,
                  use_odom=False, use_joint_states=False):
 
+        self.frontrange = 0
+        self.direction = 0
         # velocity publisher
         self.vel_pub = rospy.Publisher('cmd_vel', Twist,queue_size=1)
 
@@ -58,15 +60,24 @@ class AllSensorBot(object):
     # update lidar scan state
     def lidarCallback(self, data):
         self.scan = data
-	self.frontrange = self.scan.ranges[0]
-
-	if self.frontrange < 0.5:
-	    print "Stop"
-	    twist = Twist()
-	    twist.linear.x = -0.5 twist.linear.y = 0; twist.linear.z = 0
-            twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
-            self.vel_pub.publish(twist)
-
+        bg_inx = 0
+        bg_val = 0
+        for index in range(18):
+            r_inx = index * 20
+            if bg_val < self.scan.ranges[r_inx]:
+                bg_val = self.scan.ranges[r_inx]
+                bg_inx = r_inx
+        #print bg_val
+        #print bg_inx
+        self.direction = bg_inx * self.scan.angle_increment
+    	self.frontrange = self.scan.ranges[0]
+    #   angle_min = 0
+    #   angle_max = 6.283189 = 2pi
+    #   angle_increment = 0.0175019 = 1deg
+    #   time_increment = 0.0
+    #   scan_increment = 0.0
+    #   range_min = 0.11999999
+    #   range_max = 3.5
     #	rospy.loginfo(self.ranges)
     #	print self.ranges[0]
 
@@ -108,14 +119,27 @@ class AllSensorBot(object):
         calc Twist and publish cmd_vel topic
         '''
         r = rospy.Rate(1)
-
+        dirlock = 0
         while not rospy.is_shutdown():
             # update twist
+            #print self.direction
             twist = Twist()
-            twist.linear.x = 0.1; twist.linear.y = 0; twist.linear.z = 0
-            twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
-	  
+            if dirlock == 1:
+                if self.frontrange > 0.3:
+                    twist.linear.x = 0.1; twist.linear.y = 0; twist.linear.z = 0
+                    twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
+                else:
+                    twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
+                    twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
+                    dirlock = 0
+
+            if dirlock == 0:
+                twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
+                twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = self.direction
+                dirlock = 1
 	    
+            print self.direction 
+	    print self.frontrange 
             # publish twist topic
             self.vel_pub.publish(twist)
             r.sleep()
