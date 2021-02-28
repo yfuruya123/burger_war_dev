@@ -35,6 +35,7 @@ class AllSensorBot(object):
         if use_lidar:
             self.scan = LaserScan()
             self.scanned = LaserScan()
+            self.RadarRatio = 50
             self.lidar_sub = rospy.Subscriber('scan', LaserScan, self.lidarCallback)
 
         # camera subscribver
@@ -87,44 +88,55 @@ class AllSensorBot(object):
         for i in range(len(npSubRanges)):
             if npSubRanges[i] < 0.15:
                 npSubRanges[i] = 0
+            else:
+                npSubRanges[i] = 1
+        npMaskedRanges = npScanRanges*npSubRanges
+        """
             if npSubRanges[i] != 0:
                 print "i=%d Range=%f" %(i,npSubRanges[i])
-        #print npSubRanges
+        print npSubRanges
+        """
         """
         Create blank image with 701x701[pixel]
         """
-        height = int(self.scan.range_max * 100 * 2 + 1)
-        width = int(self.scan.range_max * 100 * 2 + 1)
-        radar = np.zeros((height,width,3),np.uint8)
-        origin_x = int(self.scan.range_max * 100)
-        origin_y = int(self.scan.range_max * 100)
-        radar.itemset((origin_x,origin_y,2),255)
+        height = int(self.scan.range_max * self.RadarRatio * 2 + 1)
+        width = int(self.scan.range_max * self.RadarRatio * 2 + 1)
+        radar = np.ones((height,width,3),np.uint8)*40
+        origin_x = int(self.scan.range_max * self.RadarRatio)
+        origin_y = int(self.scan.range_max * self.RadarRatio)
+        #radar.itemset((origin_x,origin_y,2),255)
         #radar[origin_x,origin_y] = [255,255,255]
-        """
-        for n in range(0,50):
-            radar.itemset((n,n,1),255)
-        """
+        
+        for n in range(0,width):
+            radar.itemset((origin_y,n,2),255)
+            radar.itemset((n,origin_x,2),255)
+        
          
-        for i in range(len(npSubRanges)):
-            if npSubRanges[i] != 0:
+        for i in range(len(npMaskedRanges)):
+            if npMaskedRanges[i] != 0:
                 if i <= 90:
                     ang = np.deg2rad(90 - i)
-                    x = origin_x + int(100 * npSubRanges[i] * math.cos(ang))
-                    y = origin_y - int(100 * npSubRanges[i] * math.sin(ang))
+                    x = origin_x - int(self.RadarRatio * npMaskedRanges[i] * math.cos(ang))
+                    y = origin_y - int(self.RadarRatio * npMaskedRanges[i] * math.sin(ang))
+                    print "i:%d ang:%f x:%d y:%d range:%f" %(i, np.rad2deg(ang),x,y,npMaskedRanges[i])
                 elif i > 90 and i <= 180:
                     ang = np.deg2rad(i - 90)
-                    x = origin_x + int(100 * npSubRanges[i] * math.cos(ang))
-                    y = origin_y + int(100 * npSubRanges[i] * math.sin(ang))
+                    x = origin_x - int(self.RadarRatio * npMaskedRanges[i] * math.cos(ang))
+                    y = origin_y + int(self.RadarRatio * npMaskedRanges[i] * math.sin(ang))
+                    print "i:%d ang:%f x:%d y:%d range:%f" %(i, np.rad2deg(ang),x,y,npMaskedRanges[i])
                 elif i > 180 and i <= 270:
                     ang = np.deg2rad(270 - i)
-                    x = origin_x - int(100 * npSubRanges[i] * math.cos(ang))
-                    y = origin_y + int(100 * npSubRanges[i] * math.sin(ang))
+                    x = origin_x + int(self.RadarRatio * npMaskedRanges[i] * math.cos(ang))
+                    y = origin_y + int(self.RadarRatio * npMaskedRanges[i] * math.sin(ang))
+                    print "i:%d ang:%f x:%d y:%d range:%f" %(i, np.rad2deg(ang),x,y,npMaskedRanges[i])
                 elif i > 270 and i <= 359:
                     ang = np.deg2rad(i - 270)
-                    x = origin_x - int(100 * npSubRanges[i] * math.cos(ang))
-                    y = origin_y - int(100 * npSubRanges[i] * math.sin(ang))
-                print "ang:%f x:%d y:%d" %(ang,x,y)
-                radar.itemset((x,y,1),255)
+                    x = origin_x + int(self.RadarRatio * npMaskedRanges[i] * math.cos(ang))
+                    y = origin_y - int(self.RadarRatio * npMaskedRanges[i] * math.sin(ang))
+                    print "i:%d ang:%f x:%d y:%d range:%f" %(i, np.rad2deg(ang),x,y,npMaskedRanges[i])
+                #print "ang:%f x:%d y:%d" %(np.rad2deg(ang),x,y)
+                radar.itemset((y,x,1),255)
+        
         cv2.imshow('Radar',radar)
         cv2.waitKey(1)
         self.scanned.ranges = self.scan.ranges[:]
