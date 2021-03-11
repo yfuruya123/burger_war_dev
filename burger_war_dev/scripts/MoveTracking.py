@@ -138,59 +138,11 @@ class AllSensorBot(object):
                 #print("x=%x,y=%d,w=%d,h=%d" %(x,y,w,h))
                 cv2.rectangle(self.img2,(x,y),(x+w,y+h),(0,255,0),5)
 
-            """
-            for i in range(0, len(contours_and)):
-                if len(contours_and[i]) > 0:
-                    rect_and = contours_and[i]
-                    x,y,w,h = cv2.boundingRect(rect_and)
-                    cv2.rectangle(self.img2,(x,y),(x+w,y+h),(0,255,0),5)
-            for i in range(0, len(contours1)):
-                if len(contours1[i]) > 0:
-                    rect1 = contours1[i]
-                    x,y,w,h = cv2.boundingRect(rect1)
-                    cv2.rectangle(self.img2,(x,y),(x+w,y+h),(0,0,255),5)
-            for i in range(0, len(contours2)):
-                if len(contours2[i]) > 0:
-                    rect2 = contours2[i]
-                    x,y,w,h = cv2.boundingRect(rect2)
-                    cv2.rectangle(self.img2,(x,y),(x+w,y+h),(0,255,0),5)
-            """
-            
-            #cv2.drawContours(self.img2, contours1, -1, color=(0, 255, 0), thickness=5)
-            #cv2.drawContours(self.img3, contours2, -1, color=(0, 255, 0), thickness=5)
-            
-            #for i in range(0, len(contours1)):
-            #    if len(contours1[i]) > 0:
-            #        rect1 = contours1[i]
-            #        x,y,w,h = cv2.boundingRect(rect1)
-            #        cv2.rectangle(self.img2,(x,y),(x+w,y+h),(0,255,0),5)
-            #        self.grav1[0] = (x+x+w)/2
-            #        self.grav1[1] = (y+y+h)/2
-            #        print('grav1',self.grav1)
-            #for i in range(0, len(contours2)):
-            #    if len(contours2[i]) > 0:
-            #        rect2 = contours2[i]
-            #        x,y,w,h = cv2.boundingRect(rect2)
-            #        cv2.rectangle(self.img3,(x,y),(x+w,y+h),(0,255,0),5)
-            #        self.grav2[0] = (x+x+w)/2
-            #        self.grav2[1] = (y+y+h)/2
-                    #print('grav2',self.grav2)
-           
-            #if self.grav1[0] > 0 and self.grav2[0] > 0:
-            #    if (self.grav2[0] - self.grav1[0]) < 0:
-            #        print('left')
-            #    elif (self.grav2[0] - self.grav1[0]) > 0:
-            #        print('right')
-            #    else:
-            #        print('')
-            #if self.grav1[1] > 0 and self.grav2[1] > 0:
-                
-
             cv2.imshow("Image window1", self.img2)
             #cv2.imshow("Image window2", self.img3)
 
-            cv2.imshow("Diff Image window1", diff1_th)
-            cv2.imshow("Diff Image window2", diff2_th)
+            #cv2.imshow("Diff Image window1", diff1_th)
+            #cv2.imshow("Diff Image window2", diff2_th)
             #cv2.imshow("Diff Image window1", diff_and)
             cv2.waitKey(1)
             self.img1 = self.img2
